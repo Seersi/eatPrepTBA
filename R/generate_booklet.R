@@ -15,6 +15,11 @@
 #' @param custom_texts Optional named list of Testcenter custom text keys and
 #'   replacement strings. These are emitted as booklet-level `CustomText` nodes
 #'   directly after `Metadata`.
+#' @param widgets Optional character vector specifying the widgets to include
+#'   in the booklet. Possible values are `"calculator"`, `"molecule"` and
+#'   `"periodic"`.
+#' @param journal_lines Optional numeric value. Number of journal lines displayed in the
+#'   calculator widget. Defaults to `0`.
 #'
 #' @description
 #' `r lifecycle::badge("deprecated")`
@@ -30,7 +35,9 @@ generate_booklet <- function(booklet_id,
                              app_version = "16.0.2",
                              login = NULL,
                              booklet_config_version = c("18.1", "18.0", "legacy-16"),
-                             custom_texts = NULL) {
+                             custom_texts = NULL,
+                             widgets = NULL,
+                             journal_lines = 0L) {
   cli_setting()
   # input validation
   checkmate::assert_character(booklet_id)
@@ -49,6 +56,12 @@ generate_booklet <- function(booklet_id,
     booklet_configuration,
     booklet_config_version = booklet_config_version
   )
+
+  Widgets <- prepare_widgets(
+    widgets,
+    journal_lines = journal_lines
+  )
+
 
   if (!is.null(login)) {
     app_version <- login@app_version
@@ -79,6 +92,7 @@ generate_booklet <- function(booklet_id,
     Metadata = Metadata,
     CustomTexts = CustomTexts,
     BookletConfig = BookletConfig,
+    Widgets = Widgets$Widgets,
     Units = Units
   ) %>%
     purrr::discard(is.null)
